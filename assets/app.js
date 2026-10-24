@@ -54,7 +54,15 @@
   App.Store = Store;
 
   /* ============================== matemática ============================== */
+  function wrapTables(el) {
+    $$('table', el).forEach((t) => {
+      if (t.closest('.tbl-wrap, .w-out, .arrows')) return;
+      const w = document.createElement('div'); w.className = 'tbl-wrap';
+      t.parentElement.insertBefore(w, t); w.appendChild(t);
+    });
+  }
   function renderMath(el) {
+    if (el) wrapTables(el);
     if (!el || !window.renderMathInElement) return;
     try {
       window.renderMathInElement(el, {
@@ -893,7 +901,7 @@
 
   function sideNav(active) {
     const s = $('#side');
-    let h = `<button type="button" class="tb-btn side-close" id="sideClose">Cerrar menú</button><nav class="nav-top" aria-label="General"><a href="#inicio" class="${active === 'inicio' ? 'on' : ''}">Inicio y plan de estudio</a><a href="#formulas" class="${active === 'formulas' ? 'on' : ''}">Hoja de fórmulas</a><a href="#simulacro" class="${active === 'simulacro' ? 'on' : ''}">Simulacro de examen</a></nav>`;
+    let h = `<button type="button" class="tb-btn side-close" id="sideClose">Cerrar menú</button><nav class="nav-top" aria-label="General"><a href="#inicio" class="${active === 'inicio' ? 'on' : ''}">Inicio y plan de estudio</a><a href="#feed" class="${/^feed/.test(active) ? 'on' : ''}">Aprender scrolleando</a><a href="#formulas" class="${active === 'formulas' ? 'on' : ''}">Hoja de fórmulas</a><a href="#simulacro" class="${active === 'simulacro' ? 'on' : ''}">Simulacro de examen</a></nav>`;
     App.UNITS.forEach((u) => {
       const p = unitProgress(u);
       h += `<div class="nav-unit"><a class="nav-unit-h" href="#u${u.n}"><span class="n">U${u.n}</span>${u.title}</a><div class="nav-links">
@@ -910,7 +918,7 @@
     const last = Store.d.last && Store.d.last !== 'inicio' ? Store.d.last : '';
     let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II</h1>
       <p>Toda la teoría de los capítulos 1 a 6, con gráficos que podés mover, preguntas rápidas y cada ejercicio de los TP explicado como lo resuelve el profe. Después, 5 variantes de cada ejercicio para hacer en papel.</p>
-      <div class="row" style="margin-top:16px">${last ? `<a class="btn primary" href="#${last}">Seguir donde quedé</a>` : `<a class="btn primary" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
+      <div class="row" style="margin-top:16px"><a class="btn primary" href="#feed">Aprender scrolleando</a>${last && !/^feed/.test(last) ? `<a class="btn" href="#${last}">Seguir donde quedé</a>` : `<a class="btn" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
       <div class="sec-h"><h2>Cómo estudiar con esta web</h2></div>
       <div class="steps">
         <div class="step"><h4>Teoría en tarjetas</h4><p>Una idea por tarjeta. Mové los gráficos y contestá la pregunta del final antes de pasar.</p></div>
@@ -1101,11 +1109,101 @@
     runQuiz($('#qz'), shuffle(Math.random, pool).slice(0, 15));
   }
 
+  /* ============================== modo scroll (feed tipo TikTok) ============================== */
+  function feedSlides(units) {
+    const S = [];
+    units.forEach((u) => {
+      S.push({ k: 'intro', u });
+      const L = u.lessons.length;
+      const qPer = Math.ceil(u.quiz.length / L), fPer = Math.ceil((u.formulas || []).length / L);
+      u.lessons.forEach((l, li) => {
+        S.push({ k: 'lesson', u, l, li });
+        l.cards.forEach((c, ci) => {
+          S.push({ k: 'card', u, l, li, c, ci });
+          if (c.q) S.push({ k: 'q', u, q: c.q, tag: '¿Lo entendiste?' });
+        });
+        const qs = u.quiz.slice(li * qPer, (li + 1) * qPer);
+        const fs = (u.formulas || []).slice(li * fPer, (li + 1) * fPer);
+        // intercalar: pregunta, fórmula, pregunta...
+        for (let k = 0; k < Math.max(qs.length, fs.length); k++) {
+          if (qs[k]) S.push({ k: 'q', u, q: qs[k], tag: qs[k].k === 'vf' ? '¿Verdadero o falso?' : 'Elegí la correcta' });
+          if (fs[k]) S.push({ k: 'f', u, fm: fs[k] });
+        }
+      });
+      S.push({ k: 'end', u });
+    });
+    return S;
+  }
+  function slideHTML(s, i, n) {
+    const hint = i < n - 1 ? '<div class="fs-hint" aria-hidden="true">deslizá para arriba</div>' : '';
+    const eb = (t) => `<span class="eyebrow">${t}</span>`;
+    let inner = '', cls = '';
+    if (s.k === 'intro') {
+      cls = 'fs-intro';
+      inner = `${eb('Unidad ' + s.u.n + ' · ' + s.u.caps)}<h2 class="fs-big">${s.u.title}</h2><p>${s.u.blurb}</p><p class="fs-small">${s.u.lessons.length} lecciones · preguntas y fórmulas en el medio</p>`;
+    } else if (s.k === 'lesson') {
+      cls = 'fs-lesson';
+      inner = `${eb('Lección ' + s.u.n + '.' + (s.li + 1))}<h2 class="fs-big">${s.l.t}</h2><p>${s.l.d || ''}</p><p class="fs-small">${s.l.cards.length} tarjetas</p>`;
+    } else if (s.k === 'card') {
+      const c = s.c;
+      inner = `${eb('U' + s.u.n + ' · ' + s.l.t + ' · ' + (s.ci + 1) + '/' + s.l.cards.length)}<h3>${c.t}</h3><div class="prose">${c.b || ''}</div>${c.w ? `<div data-w="${c.w}" data-o="${c.o || ''}"></div>` : ''}${c.b2 ? `<div class="prose" style="margin-top:10px">${c.b2}</div>` : ''}`;
+    } else if (s.k === 'q') {
+      cls = 'fs-q';
+      inner = `<span class="chip blue">${s.tag}</span><div class="check fq"></div>`;
+    } else if (s.k === 'f') {
+      cls = 'fs-f';
+      const e = (App.FX || {})[s.fm.n];
+      inner = `${eb('Fórmula · U' + s.u.n)}<h3>${s.fm.n}</h3><div>$$${s.fm.tex}$$</div>` + (e ? `<table class="fx-sym">${e.s.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table><p style="margin:10px 0 6px">${e.m}</p><div class="ex"><span class="lbl">ejemplo</span>${e.ej}</div>` : `<p>${s.fm.d}</p>`);
+    } else if (s.k === 'end') {
+      cls = 'fs-intro';
+      const nx = unitById(s.u.n + 1);
+      inner = `${eb('Terminaste la unidad ' + s.u.n)}<h2 class="fs-big">Ahora, los TP</h2><p>La teoría ya la viste. Lo que más suma en el examen es resolver los ejercicios en papel.</p><div class="row" style="margin-top:14px"><a class="btn primary" href="#u${s.u.n}-tps">Ir a los TP de la unidad ${s.u.n}</a>${nx ? `<a class="btn" href="#feed-u${nx.n}">Seguir con la unidad ${nx.n}</a>` : '<a class="btn" href="#simulacro">Hacer un simulacro</a>'}</div>`;
+    }
+    return `<section class="fslide ${cls}" data-i="${i}"><div class="fslide-in">${inner}</div>${hint}</section>`;
+  }
+  function viewFeed(only) {
+    const units = only ? [unitById(only)] : App.UNITS;
+    const key = only ? 'u' + only : 'all';
+    const S = feedSlides(units), n = S.length;
+    Store.d.feed = Store.d.feed || {};
+    const chips = [['feed', 'Todo', !only]].concat(App.UNITS.map((u) => ['feed-u' + u.n, 'U' + u.n, only === u.n]));
+    main().innerHTML = `<div class="feed" id="feed"><div class="feed-top"><a class="tb-btn" href="#inicio">Salir</a><div class="feed-chips">${chips.map(([h, t, on]) => `<a class="tab-a ${on ? 'on' : ''}" href="#${h}">${t}</a>`).join('')}</div><span class="feed-count num" id="fcount">1/${n}</span><div class="feed-bar"><i id="fbar"></i></div></div>${S.map((s, i) => slideHTML(s, i, n)).join('')}</div>`;
+    const feed = $('#feed'), slides = $$('.fslide', feed);
+    function mount(el) {
+      if (el.dataset.ready) return; el.dataset.ready = '1';
+      const s = S[+el.dataset.i];
+      if (s.k === 'q') mountCheck($('.fq', el), s.q);
+      renderMath(el); mountWidgets(el);
+    }
+    function seen(i) {
+      $('#fcount').textContent = (i + 1) + '/' + n;
+      $('#fbar').style.width = ((i + 1) / n) * 100 + '%';
+      Store.d.feed[key] = i;
+      const s = S[i];
+      if (s.k === 'card') {
+        Store.d.cards[s.l.id] = Math.max(Store.d.cards[s.l.id] || 0, s.ci);
+        if (s.ci === s.l.cards.length - 1) Store.d.lessons[s.l.id] = true;
+      }
+      Store.save();
+    }
+    if ('IntersectionObserver' in window) {
+      const pre = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) mount(e.target); }), { root: feed, rootMargin: '150% 0px' });
+      const cur = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) seen(+e.target.dataset.i); }), { root: feed, threshold: 0.6 });
+      slides.forEach((el) => { pre.observe(el); cur.observe(el); });
+    } else slides.forEach(mount);
+    const start = Math.min(Store.d.feed[key] || 0, n - 1);
+    mount(slides[start]);
+    requestAnimationFrame(() => { feed.scrollTop = slides[start].offsetTop; seen(start); });
+  }
+
   /* ============================== router ============================== */
   function route() {
     const hsh = (location.hash || '#inicio').slice(1) || 'inicio';
     let m, active = hsh;
-    if (hsh === 'inicio') viewHome();
+    const isFeed = /^feed(-u\d+)?$/.test(hsh);
+    document.body.classList.toggle('feed-on', isFeed);
+    if (isFeed) { m = hsh.match(/^feed-u(\d+)$/); viewFeed(m && unitById(+m[1]) ? +m[1] : null); }
+    else if (hsh === 'inicio') viewHome();
     else if (hsh === 'formulas') viewFormulas();
     else if (hsh === 'simulacro') viewSim();
     else if ((m = hsh.match(/^u(\d+)$/)) && unitById(+m[1])) viewUnit(unitById(+m[1]));
@@ -1116,7 +1214,10 @@
     else { viewHome(); active = 'inicio'; }
     Store.d.last = hsh; Store.save();
     sideNav(active);
-    window.scrollTo(0, 0);
+    const bk = isFeed ? 'feed' : ['inicio', 'formulas', 'simulacro'].includes(hsh) ? hsh : '';
+    $$('.bnav [data-b]').forEach((a) => { const on = a.dataset.b === bk; a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    const bu = $('#bnavUnits'); if (bu) bu.classList.toggle('on', !bk && hsh !== 'inicio');
+    if (!isFeed) window.scrollTo(0, 0);
     const ttl = document.querySelector('.page-h h1, .home-hero h1');
     document.title = (hsh === 'inicio' || !ttl ? '' : ttl.textContent + ' · ') + 'Cuaderno de Economía II';
   }
@@ -1125,7 +1226,7 @@
   function timer() {
     const b = $('#timer'); if (!b) return;
     let mode = 'foco', left = 25 * 60, t = null;
-    const paint = () => { const m = Math.floor(left / 60), s = left % 60; b.textContent = (mode === 'foco' ? 'Foco ' : 'Pausa ') + m + ':' + String(s).padStart(2, '0'); b.classList.toggle('run', !!t); };
+    const paint = () => { const m = Math.floor(left / 60), s = left % 60; b.innerHTML = (mode === 'foco' ? '<span class="lg">Foco </span>' : 'Pausa ') + m + ':' + String(s).padStart(2, '0'); b.classList.toggle('run', !!t); };
     b.addEventListener('click', () => {
       if (t) { clearInterval(t); t = null; paint(); return; }
       t = setInterval(() => { left--; if (left <= 0) { clearInterval(t); t = null; if (mode === 'foco') { mode = 'pausa'; left = 5 * 60; toast('Terminó el bloque. Pausa de 5 minutos.'); } else { mode = 'foco'; left = 25 * 60; toast('Pausa terminada. ¿Otro bloque?'); } } paint(); }, 1000);
@@ -1139,7 +1240,7 @@
     const b = $('#themeBtn'); if (!b) return;
     const root = document.documentElement;
     const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    const paint = () => { b.textContent = isDark() ? 'Modo claro' : 'Modo oscuro'; };
+    const paint = () => { b.innerHTML = '<span class="lg">Modo </span>' + (isDark() ? 'claro' : 'oscuro'); };
     root.dataset.theme = Store.d.theme || 'light';
     b.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; root.dataset.theme = t; Store.d.theme = t; Store.save(); paint(); });
     paint();
@@ -1150,8 +1251,12 @@
     themeToggle();
     App.UNITS.sort((a, b) => a.n - b.n);
     $('#menuBtn').addEventListener('click', () => $('#side').classList.add('open'));
+    const bu = $('#bnavUnits'); if (bu) bu.addEventListener('click', () => $('#side').classList.add('open'));
     timer();
     window.addEventListener('hashchange', route);
+    // en el celular, abrir directo en el modo scroll
+    const phone = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    if (phone && (!location.hash || location.hash === '#' || location.hash === '#inicio')) { try { history.replaceState(null, '', '#feed'); } catch (e) { /* sigue sin hash */ } }
     route();
   };
 })();
