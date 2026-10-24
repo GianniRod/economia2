@@ -54,7 +54,15 @@
   App.Store = Store;
 
   /* ============================== matemática ============================== */
+  function wrapTables(el) {
+    $$('table', el).forEach((t) => {
+      if (t.closest('.tbl-wrap, .w-out, .arrows')) return;
+      const w = document.createElement('div'); w.className = 'tbl-wrap';
+      t.parentElement.insertBefore(w, t); w.appendChild(t);
+    });
+  }
   function renderMath(el) {
+    if (el) wrapTables(el);
     if (!el || !window.renderMathInElement) return;
     try {
       window.renderMathInElement(el, {
@@ -910,7 +918,7 @@
     const last = Store.d.last && Store.d.last !== 'inicio' ? Store.d.last : '';
     let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II</h1>
       <p>Toda la teoría de los capítulos 1 a 6, con gráficos que podés mover, preguntas rápidas y cada ejercicio de los TP explicado como lo resuelve el profe. Después, 5 variantes de cada ejercicio para hacer en papel.</p>
-      <div class="row" style="margin-top:16px"><a class="btn primary" href="#feed">Aprender scrolleando</a>${last && !/^feed/.test(last) ? `<a class="btn" href="#${last}">Seguir donde quedé</a>` : `<a class="btn primary" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
+      <div class="row" style="margin-top:16px"><a class="btn primary" href="#feed">Aprender scrolleando</a>${last && !/^feed/.test(last) ? `<a class="btn" href="#${last}">Seguir donde quedé</a>` : `<a class="btn" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
       <div class="sec-h"><h2>Cómo estudiar con esta web</h2></div>
       <div class="steps">
         <div class="step"><h4>Teoría en tarjetas</h4><p>Una idea por tarjeta. Mové los gráficos y contestá la pregunta del final antes de pasar.</p></div>
@@ -1206,6 +1214,9 @@
     else { viewHome(); active = 'inicio'; }
     Store.d.last = hsh; Store.save();
     sideNav(active);
+    const bk = isFeed ? 'feed' : ['inicio', 'formulas', 'simulacro'].includes(hsh) ? hsh : '';
+    $$('.bnav [data-b]').forEach((a) => { const on = a.dataset.b === bk; a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    const bu = $('#bnavUnits'); if (bu) bu.classList.toggle('on', !bk && hsh !== 'inicio');
     if (!isFeed) window.scrollTo(0, 0);
     const ttl = document.querySelector('.page-h h1, .home-hero h1');
     document.title = (hsh === 'inicio' || !ttl ? '' : ttl.textContent + ' · ') + 'Cuaderno de Economía II';
@@ -1215,7 +1226,7 @@
   function timer() {
     const b = $('#timer'); if (!b) return;
     let mode = 'foco', left = 25 * 60, t = null;
-    const paint = () => { const m = Math.floor(left / 60), s = left % 60; b.textContent = (mode === 'foco' ? 'Foco ' : 'Pausa ') + m + ':' + String(s).padStart(2, '0'); b.classList.toggle('run', !!t); };
+    const paint = () => { const m = Math.floor(left / 60), s = left % 60; b.innerHTML = (mode === 'foco' ? '<span class="lg">Foco </span>' : 'Pausa ') + m + ':' + String(s).padStart(2, '0'); b.classList.toggle('run', !!t); };
     b.addEventListener('click', () => {
       if (t) { clearInterval(t); t = null; paint(); return; }
       t = setInterval(() => { left--; if (left <= 0) { clearInterval(t); t = null; if (mode === 'foco') { mode = 'pausa'; left = 5 * 60; toast('Terminó el bloque. Pausa de 5 minutos.'); } else { mode = 'foco'; left = 25 * 60; toast('Pausa terminada. ¿Otro bloque?'); } } paint(); }, 1000);
@@ -1229,7 +1240,7 @@
     const b = $('#themeBtn'); if (!b) return;
     const root = document.documentElement;
     const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    const paint = () => { b.textContent = isDark() ? 'Modo claro' : 'Modo oscuro'; };
+    const paint = () => { b.innerHTML = '<span class="lg">Modo </span>' + (isDark() ? 'claro' : 'oscuro'); };
     root.dataset.theme = Store.d.theme || 'light';
     b.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; root.dataset.theme = t; Store.d.theme = t; Store.save(); paint(); });
     paint();
@@ -1240,11 +1251,12 @@
     themeToggle();
     App.UNITS.sort((a, b) => a.n - b.n);
     $('#menuBtn').addEventListener('click', () => $('#side').classList.add('open'));
+    const bu = $('#bnavUnits'); if (bu) bu.addEventListener('click', () => $('#side').classList.add('open'));
     timer();
     window.addEventListener('hashchange', route);
     // en el celular, abrir directo en el modo scroll
     const phone = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
-    if (phone && (!location.hash || location.hash === '#')) { try { history.replaceState(null, '', '#feed'); } catch (e) { /* sigue sin hash */ } }
+    if (phone && (!location.hash || location.hash === '#' || location.hash === '#inicio')) { try { history.replaceState(null, '', '#feed'); } catch (e) { /* sigue sin hash */ } }
     route();
   };
 })();

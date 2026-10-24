@@ -15,8 +15,7 @@
 <header class="topbar">
   <div class="topbar-in">
     <button class="tb-btn menu-btn" id="menuBtn" type="button" aria-label="Abrir menú">Menú</button>
-    <a class="brand" href="#inicio"><b>Cuaderno de Eco II</b></a>
-    <a class="tb-btn show-sm" href="#feed">Scroll</a>
+    <a class="brand" href="#inicio"><b><span class="lg">Cuaderno de </span>Eco II</b></a>
     <a class="tb-btn hide-sm" href="#formulas">Fórmulas</a>
     <a class="tb-btn hide-sm" href="#simulacro">Simulacro</a>
     <button class="tb-btn" id="themeBtn" type="button">Modo claro</button>
@@ -27,6 +26,13 @@
   <aside class="side" id="side" aria-label="Unidades"></aside>
   <main class="main" id="main"><p>Cargando…</p></main>
 </div>
+<nav class="bnav" aria-label="Navegación principal">
+  <a href="#inicio" data-b="inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</a>
+  <a href="#feed" data-b="feed"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 9.5l4 2.5-4 2.5z"/></svg>Scroll</a>
+  <button type="button" id="bnavUnits"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg>Unidades</button>
+  <a href="#formulas" data-b="formulas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20c2 0 2.5-1.5 3-4l2-10c.5-2 1.5-3 3.5-3M7 10h9"/></svg>Fórmulas</a>
+  <a href="#simulacro" data-b="simulacro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6M9 4a2 2 0 0 0-2 2H5v15h14V6h-2a2 2 0 0 0-2-2M8.5 13l2.5 2.5 4.5-5"/></svg>Simulacro</a>
+</nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
