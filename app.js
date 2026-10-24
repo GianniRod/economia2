@@ -908,7 +908,7 @@
 
   function viewHome() {
     const last = Store.d.last && Store.d.last !== 'inicio' ? Store.d.last : '';
-    let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II, <span class="hand">de a una tarjeta por vez</span></h1>
+    let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II</h1>
       <p>Toda la teoría de los capítulos 1 a 6 cortada en tarjetas cortas, con gráficos que podés mover, preguntas rápidas y cada ejercicio de los TP explicado como lo resuelve el profe. Después, 5 variantes de cada ejercicio para hacer en papel.</p>
       <div class="row" style="margin-top:16px">${last ? `<a class="btn primary" href="#${last}">Seguir donde quedé</a>` : `<a class="btn primary" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
       <div class="sec-h"><h2>Cómo estudiar con esta web</h2></div>
