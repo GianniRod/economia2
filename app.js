@@ -1140,7 +1140,7 @@
     const root = document.documentElement;
     const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     const paint = () => { b.textContent = isDark() ? 'Modo claro' : 'Modo oscuro'; };
-    if (Store.d.theme) root.dataset.theme = Store.d.theme;
+    root.dataset.theme = Store.d.theme || 'light';
     b.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; root.dataset.theme = t; Store.d.theme = t; Store.save(); paint(); });
     paint();
   }
