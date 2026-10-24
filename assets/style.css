@@ -384,6 +384,19 @@ svg.plot .bar-m { fill: var(--rule); }
 .f-item .fn { font-weight: 700; font-size: var(--s-sm); }
 .f-item .fu { font-family: var(--f-mono); font-size: 0.72rem; color: var(--ink-3); }
 .f-item p { margin: 4px 0 0; font-size: var(--s-sm); color: var(--ink-2); }
+details.fx > summary { cursor: pointer; list-style: none; display: block; }
+details.fx > summary::-webkit-details-marker { display: none; }
+details.fx:hover, details.fx[open] { border-color: var(--blue); }
+.fx-more { float: right; font-size: 0.78rem; color: var(--blue); font-weight: 700; }
+.fx-more::after { content: " +"; font-family: var(--f-mono); }
+details.fx[open] .fx-more::after { content: " –"; }
+.fx-body { border-top: 1px dashed var(--rule); margin-top: 10px; padding-top: 10px; font-size: var(--s-sm); }
+.fx-body h4 { font-size: 0.95rem; margin: 10px 0 6px; }
+.fx-body h4:first-child { margin-top: 0; }
+.fx-body p { color: var(--ink); font-size: var(--s-sm); }
+.fx-sym { border-collapse: collapse; width: 100%; }
+.fx-sym td { border-bottom: 1px solid var(--rule); padding: 5px 8px; vertical-align: top; }
+.fx-sym td:first-child { width: 7.5rem; white-space: nowrap; }
 
 /* classify game */
 .cls-grid { display: grid; gap: 8px; }

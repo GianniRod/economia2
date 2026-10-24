@@ -908,8 +908,8 @@
 
   function viewHome() {
     const last = Store.d.last && Store.d.last !== 'inicio' ? Store.d.last : '';
-    let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II, <span class="hand">de a una tarjeta por vez</span></h1>
-      <p>Toda la teoría de los capítulos 1 a 6 cortada en tarjetas cortas, con gráficos que podés mover, preguntas rápidas y cada ejercicio de los TP explicado como lo resuelve el profe. Después, 5 variantes de cada ejercicio para hacer en papel.</p>
+    let h = `<div class="home-hero"><span class="eyebrow">Universidad Torcuato Di Tella · Economía II</span><h1>Economía II</h1>
+      <p>Toda la teoría de los capítulos 1 a 6, con gráficos que podés mover, preguntas rápidas y cada ejercicio de los TP explicado como lo resuelve el profe. Después, 5 variantes de cada ejercicio para hacer en papel.</p>
       <div class="row" style="margin-top:16px">${last ? `<a class="btn primary" href="#${last}">Seguir donde quedé</a>` : `<a class="btn primary" href="#u1-l1">Empezar por la Unidad 1</a>`}<a class="btn" href="#simulacro">Hacer un simulacro</a></div></div>
       <div class="sec-h"><h2>Cómo estudiar con esta web</h2></div>
       <div class="steps">
@@ -1069,15 +1069,24 @@
   }
 
   function viewFormulas() {
-    let h = `<div class="page-h"><span class="eyebrow">Para tener a mano</span><h1>Hoja de fórmulas</h1><p>Todas las fórmulas de las unidades, con una línea de qué significa cada una. Escribí para filtrar.</p></div><input class="f-search main-col" id="fs" type="search" placeholder="Buscar: deflactor, Fisher, PMK, cuenta corriente…" aria-label="Buscar fórmula"><div id="fl"></div>`;
+    let h = `<div class="page-h"><span class="eyebrow">Para tener a mano</span><h1>Hoja de fórmulas</h1><p>Tocá una fórmula para ver qué es cada símbolo, qué significa y un ejemplo con números. Escribí para filtrar.</p></div><input class="f-search main-col" id="fs" type="search" placeholder="Buscar: deflactor, Fisher, PMK, cuenta corriente…" aria-label="Buscar fórmula"><div id="fl"></div>`;
     main().innerHTML = h;
+    const FX = App.FX || {};
+    const fxText = (x) => { const e = FX[x.n]; return e ? e.m + ' ' + e.ej + ' ' + e.s.map((p) => p.join(' ')).join(' ') : ''; };
+    function item(x) {
+      const e = FX[x.n];
+      if (!e) return `<div class="f-item"><div class="fn">${x.n}</div><div>$$${x.tex}$$</div><p>${x.d}</p></div>`;
+      return `<details class="f-item fx"><summary><span class="fn">${x.n}</span><span class="fx-more">Ver explicación</span><div>$$${x.tex}$$</div><p>${x.d}</p></summary>
+        <div class="fx-body"><h4>Qué es cada símbolo</h4><table class="fx-sym">${e.s.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+        <h4>Qué significa</h4><p>${e.m}</p><div class="ex"><span class="lbl">ejemplo con números</span>${e.ej}</div></div></details>`;
+    }
     function paint(q) {
       q = (q || '').toLowerCase();
       let s = '';
       App.UNITS.forEach((u) => {
-        const items = (u.formulas || []).filter((x) => !q || (x.n + ' ' + x.d + ' ' + x.tex).toLowerCase().includes(q));
+        const items = (u.formulas || []).filter((x) => !q || (x.n + ' ' + x.d + ' ' + x.tex + ' ' + fxText(x)).toLowerCase().includes(q));
         if (!items.length) return;
-        s += `<div class="sec-h"><h2>U${u.n} · ${u.title}</h2></div><div class="f-grid main-col">` + items.map((x) => `<div class="f-item"><div class="fn">${x.n}</div><div>$$${x.tex}$$</div><p>${x.d}</p></div>`).join('') + '</div>';
+        s += `<div class="sec-h"><h2>U${u.n} · ${u.title}</h2></div><div class="f-grid main-col">` + items.map(item).join('') + '</div>';
       });
       $('#fl').innerHTML = s || '<p>No hay fórmulas con ese nombre.</p>';
       renderMath($('#fl'));
@@ -1129,9 +1138,9 @@
   function themeToggle() {
     const b = $('#themeBtn'); if (!b) return;
     const root = document.documentElement;
-    const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     const paint = () => { b.textContent = isDark() ? 'Modo claro' : 'Modo oscuro'; };
-    if (Store.d.theme) root.dataset.theme = Store.d.theme;
+    root.dataset.theme = Store.d.theme || 'light';
     b.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; root.dataset.theme = t; Store.d.theme = t; Store.save(); paint(); });
     paint();
   }
