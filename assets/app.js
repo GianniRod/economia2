@@ -1114,16 +1114,17 @@
     const S = [];
     units.forEach((u) => {
       S.push({ k: 'intro', u });
-      const L = u.lessons.length;
-      const qPer = Math.ceil(u.quiz.length / L), fPer = Math.ceil((u.formulas || []).length / L);
+      // cada pregunta y fórmula va después de la lección donde se enseña (u.order); si falta, al final de la unidad
+      const ord = u.order || {}, L = u.lessons.length;
+      const lessonOf = (arr, i) => (arr && arr[i] >= 1 && arr[i] <= L ? arr[i] - 1 : L - 1);
       u.lessons.forEach((l, li) => {
         S.push({ k: 'lesson', u, l, li });
         l.cards.forEach((c, ci) => {
           S.push({ k: 'card', u, l, li, c, ci });
           if (c.q) S.push({ k: 'q', u, q: c.q, tag: '¿Lo entendiste?' });
         });
-        const qs = u.quiz.slice(li * qPer, (li + 1) * qPer);
-        const fs = (u.formulas || []).slice(li * fPer, (li + 1) * fPer);
+        const qs = u.quiz.filter((_, i) => lessonOf(ord.q, i) === li);
+        const fs = (u.formulas || []).filter((_, i) => lessonOf(ord.f, i) === li);
         // intercalar: pregunta, fórmula, pregunta...
         for (let k = 0; k < Math.max(qs.length, fs.length); k++) {
           if (qs[k]) S.push({ k: 'q', u, q: qs[k], tag: qs[k].k === 'vf' ? '¿Verdadero o falso?' : 'Elegí la correcta' });

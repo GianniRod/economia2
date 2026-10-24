@@ -100,6 +100,8 @@
   /* ------------------------------------------------------------------ */
   App.UNITS.push({
     id: 'u4', n: 4, title: 'Política fiscal', caps: 'Cap. 5', tps: 'TP 7 y 7.5',
+    /* lección (1, 2, …) donde se enseña cada pregunta del quiz y cada fórmula, en el mismo orden: ordena el modo scroll */
+    order: { q: [1, 1, 2, 2, 4, 4, 5, 5, 4, 3, 3, 3, 5, 5, 1], f: [1, 2, 2, 3, 3, 3, 4, 4, 5, 3] },
     blurb: 'El gobierno en dos períodos, ahorro público y privado, crowding out, impuestos de suma fija y equivalencia ricardiana.',
     lessons: [
       {

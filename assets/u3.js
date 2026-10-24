@@ -133,6 +133,8 @@
   /* ------------------------------------------------------------------ */
   App.UNITS.push({
     id: 'u3', n: 3, title: 'Ahorro e inversión', caps: 'Cap. 4', tps: 'TP 5 y 6',
+    /* lección (1, 2, …) donde se enseña cada pregunta del quiz y cada fórmula, en el mismo orden: ordena el modo scroll */
+    order: { q: [1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5], f: [1, 1, 1, 2, 2, 2, 3, 2, 4, 4, 4, 4] },
     blurb: 'Consumo en dos períodos, tasa real, deudores y acreedores, restricciones al crédito, inversión y el equilibrio general con shocks.',
     lessons: [
       {

@@ -173,6 +173,8 @@
   /* ------------------------------------------------------------------ */
   App.UNITS.push({
     id: 'u1', n: 1, title: 'Medir la economía', caps: 'Cap. 1 y 2', tps: 'TP 1 y 2',
+    /* lección (1, 2, …) donde se enseña cada pregunta del quiz y cada fórmula, en el mismo orden: ordena el modo scroll */
+    order: { q: [2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 4, 5, 4], f: [3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5] },
     blurb: 'Qué estudia la macro, flujos y stocks, tasas de crecimiento, PBI por sus tres métodos, PBI real, deflactor e IPC.',
     lessons: [
       {

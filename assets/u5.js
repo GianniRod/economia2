@@ -74,6 +74,8 @@
   /* ------------------------------------------------------------------ */
   App.UNITS.push({
     id: 'u5', n: 5, title: 'Economía abierta', caps: 'Cap. 6', tps: 'TP 8',
+    /* lección (1, 2, …) donde se enseña cada pregunta del quiz y cada fórmula, en el mismo orden: ordena el modo scroll */
+    order: { q: [1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 3, 3, 4], f: [1, 1, 3, 3, 3, 4, 4, 4] },
     blurb: 'Cuenta corriente, economía chica con tasa internacional, shocks con r fija, el modelo analítico y el riesgo país.',
     lessons: [
       {

@@ -108,6 +108,8 @@
   /* ------------------------------------------------------------------ */
   App.UNITS.push({
     id: 'u2', n: 2, title: 'Mercado de trabajo', caps: 'Cap. 3', tps: 'TP 3 y 4',
+    /* lección (1, 2, …) donde se enseña cada pregunta del quiz y cada fórmula, en el mismo orden: ordena el modo scroll */
+    order: { q: [2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 2], f: [2, 2, 3, 3, 3, 3, 4, 4, 2] },
     blurb: 'Oferta de trabajo (consumo vs ocio), demanda de trabajo (PML = w/P), equilibrio, producto y distribución de la renta.',
     lessons: [
       {
