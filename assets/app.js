@@ -1123,14 +1123,11 @@
           S.push({ k: 'card', u, l, li, c, ci });
           if (c.q) S.push({ k: 'q', u, q: c.q, tag: '¿Lo entendiste?' });
         });
-        const qs = u.quiz.filter((_, i) => lessonOf(ord.q, i) === li);
-        const fs = (u.formulas || []).filter((_, i) => lessonOf(ord.f, i) === li);
-        // intercalar: pregunta, fórmula, pregunta...
-        for (let k = 0; k < Math.max(qs.length, fs.length); k++) {
-          if (qs[k]) S.push({ k: 'q', u, q: qs[k], tag: qs[k].k === 'vf' ? '¿Verdadero o falso?' : 'Elegí la correcta' });
-          if (fs[k]) S.push({ k: 'f', u, fm: fs[k] });
-        }
+        u.quiz.filter((_, i) => lessonOf(ord.q, i) === li)
+          .forEach((q) => S.push({ k: 'q', u, q, tag: q.k === 'vf' ? '¿Verdadero o falso?' : 'Elegí la correcta' }));
       });
+      // las fórmulas ya aparecen dentro de las tarjetas de teoría: acá sólo un repaso al final de la unidad
+      if ((u.formulas || []).length) S.push({ k: 'frec', u });
       S.push({ k: 'end', u });
     });
     return S;
@@ -1155,6 +1152,9 @@
       cls = 'fs-f';
       const e = (App.FX || {})[s.fm.n];
       inner = `${eb('Fórmula · U' + s.u.n)}<h3>${s.fm.n}</h3><div>$$${s.fm.tex}$$</div>` + (e ? `<table class="fx-sym">${e.s.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table><p style="margin:10px 0 6px">${e.m}</p><div class="ex"><span class="lbl">ejemplo</span>${e.ej}</div>` : `<p>${s.fm.d}</p>`);
+    } else if (s.k === 'frec') {
+      cls = 'fs-f';
+      inner = `${eb('Repaso · unidad ' + s.u.n)}<h3>Las fórmulas de la unidad</h3><p class="fs-small" style="margin:0 0 8px">Ya las viste en las tarjetas. Leelas de corrido y fijate si te acordás qué significa cada una.</p>${s.u.formulas.map((x) => `<div class="frec"><b>${x.n}</b><div>$${x.tex}$</div></div>`).join('')}<p style="margin-top:12px"><a href="#formulas">En la hoja de fórmulas</a> tocás cada una para ver sus símbolos y un ejemplo.</p>`;
     } else if (s.k === 'end') {
       cls = 'fs-intro';
       const nx = unitById(s.u.n + 1);
