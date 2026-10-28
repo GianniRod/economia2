@@ -400,6 +400,17 @@ details.fx[open] .fx-more::after { content: " –"; }
 .fx-sym td { border-bottom: 1px solid var(--rule); padding: 5px 8px; vertical-align: top; }
 .fx-sym td:first-child { width: 7.5rem; white-space: nowrap; }
 
+/* flechita desplegable debajo de las fórmulas de teoría */
+details.fxt { margin: 2px 0 12px; font-size: var(--s-sm); }
+details.fxt > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px; color: var(--blue); font-weight: 700; font-size: 0.82rem; padding: 4px 2px; user-select: none; }
+details.fxt > summary::-webkit-details-marker { display: none; }
+.fxt-arr { width: 0; height: 0; border-left: 7px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; transition: transform 0.15s; }
+details.fxt[open] .fxt-arr { transform: rotate(90deg); }
+.fxt-b { margin-top: 6px; padding: 10px 14px; border: 1px solid var(--blue); border-radius: 8px; background: var(--surface-2); }
+.fxt-b h4 { font-size: 0.92rem; margin: 10px 0 6px; }
+.fxt-b h4:first-child { margin-top: 0; }
+.fxt-b p { margin: 0; color: var(--ink); }
+
 /* classify game */
 .cls-grid { display: grid; gap: 8px; }
 .cls-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }

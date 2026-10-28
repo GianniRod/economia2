@@ -77,8 +77,28 @@
         m.parentElement.insertBefore(w, m); w.appendChild(m);
       }
     });
+    explainFormulas(el);
   }
   App.renderMath = renderMath;
+
+  /* flechita debajo de cada fórmula de teoría: la fórmula en palabras y qué es cada símbolo (App.FXT, formulas-teoria.js) */
+  const normTex = (s) => s.replace(/\s+/g, ' ').trim();
+  let fxtIdx = null;
+  function explainFormulas(el) {
+    if (!App.FXT) return;
+    if (!fxtIdx) { fxtIdx = {}; Object.keys(App.FXT).forEach((k) => { fxtIdx[normTex(k)] = App.FXT[k]; }); }
+    $$('.math-block', el).forEach((b) => {
+      if (b.dataset.fxt || b.closest('.f-item, .fs-f')) return;
+      b.dataset.fxt = '1';
+      const a = b.querySelector('annotation');
+      const e = a && fxtIdx[normTex(a.textContent)];
+      if (!e) return;
+      const d = document.createElement('details'); d.className = 'fxt';
+      d.innerHTML = `<summary><span class="fxt-arr" aria-hidden="true"></span>¿Qué dice esta fórmula?</summary><div class="fxt-b"><h4>En palabras</h4><p>${e.p}</p><h4>Qué es cada símbolo</h4><table class="fx-sym">${e.s.map(([x, y]) => `<tr><td>${x}</td><td>${y}</td></tr>`).join('')}</table></div>`;
+      b.after(d);
+      try { window.renderMathInElement(d, { delimiters: [{ left: '$', right: '$', display: false }], output: 'mathml', throwOnError: false, strict: false }); } catch (err) { /* deja el texto crudo */ }
+    });
+  }
 
   function toast(msg) {
     const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; t.setAttribute('role', 'status');
